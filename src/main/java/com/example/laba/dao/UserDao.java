@@ -15,7 +15,7 @@ public class UserDao {
     private final JdbcTemplate jdbcTemplate;
     private final PasswordEncoder encoder;
 
-    private String register(User user){
+    public String register(User user){
         if (checkUserByEmail(user.getEmail())){
             return "Такой пользователь уже существует";
         }else {
@@ -36,7 +36,7 @@ public class UserDao {
     }
 
 
-    public Boolean checkRegister(User user){
+    private Boolean checkRegister(User user){
         if (user.getName() == null){
             return false;
         }else if (user.getEmail() == null){
@@ -47,12 +47,19 @@ public class UserDao {
         return true;
     }
 
-    public void addAuthorities(User user){
+    public User getUserByEmail(String email){
+        String sql = "select * from users where email = ?";
+        List<User> users = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class), email);
+        return users.get(0);
+
+    }
+
+    private void addAuthorities(User user){
         String sql = "INSERT INTO authorities(username, authority) VALUES(?,?)";
         jdbcTemplate.update(sql, user.getEmail(), "ROLE_USER");
     }
 
-    public Boolean checkUserByEmail(String email){
+    private Boolean checkUserByEmail(String email){
         String sql = "select * from \"users\" where email = ?";
         List<User> users = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(User.class), email);
         if (users.size() != 0){
